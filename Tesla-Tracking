@@ -1,0 +1,28 @@
+import teslapy
+from flask import Flask, jsonify
+
+app = Flask(__name__)
+
+# Use your existing Tesla token
+def get_tesla_data():
+    with teslapy.Tesla('your_email@example.com') as tesla:
+        tesla._access_token = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InFEc3NoM2FTV0cyT05YTTdLMzFWV0VVRW5BNCJ9.eyJpc3MiOiJodHRwczovL2F1dGgudGVzbGEuY29tL29hdXRoMi92My9udHMiLCJhenAiOiIxYzhjZGQ3Yy02NjMyLTQzNDgtYWNkMS0zNmIyMmU2YTJmZTIiLCJzdWIiOiIwNmM2Y2Y1NS00MWY2LTRhNDYtYjRlMy1lZjY1ZTdkYzA5YjQiLCJhdWQiOlsiaHR0cHM6Ly9mbGVldC1hcGkucHJkLm5hLnZuLmNsb3VkLnRlc2xhLmNvbSIsImh0dHBzOi8vZmxlZXQtYXBpLnByZC5ldS52bi5jbG91ZC50ZXNsYS5jb20iLCJodHRwczovL2F1dGgudGVzbGEuY29tL29hdXRoMi92My91c2VyaW5mbyJdLCJzY3AiOlsib3BlbmlkIl0sImFtciI6WyJwd2QiLCJtZmEiLCJvdHAiXSwiZXhwIjoxNzQyMDY3ODY5LCJpYXQiOjE3NDIwMzkwNjksIm91X2NvZGUiOiJOQSIsImxvY2FsZSI6ImVuLUNBIiwiYWNjb3VudF90eXBlIjoiYnVzaW5lc3MiLCJvcGVuX3NvdXJjZSI6ZmFsc2UsImFjY291bnRfaWQiOiJkM2ExZGExNi1mYmQ2LTQ1OWEtYjFjMS03YjgxNzRhMzhjZWIiLCJhdXRoX3RpbWUiOjE3NDIwMzg2OTh9.jCu__aIrxhiBS991prspL2aODdUWhOt7wu9nmeXTlCkDkHaDlBjQiri9UwsTa8niO2DB1hH-cHdNfMvb3dhIYO1x8dronKPCgWkGqfskvLF8BcEj9d8dp-0aCQESJ0DRUSWXdo-LP8Ubk0CDOxSVTNz1_oFEWx5z3MO3wTJys2Dfyty15T-eQvcu_0BpHF72eapzc7Uea_kL6bTHiwjKZh6O1xpAi9ELmCVc5-_njiI1QcJBfQpSmsDMIFmXuxrChh6RFZ2ccTvUMOXWSnJjxE2kiuAXsjTqesaBletvpcuSJaZCOdBbK6R9GQjKK_hqN7e6TIgL6WT6qHuGpZIidQ'  # Set your token manually
+        vehicles = tesla.vehicle_list()
+        if vehicles:
+            vehicle = vehicles[0]
+            vehicle_data = vehicle.get_vehicle_data()
+            return vehicle_data
+        return {}
+
+@app.route('/live-location')
+def live_location():
+    data = get_tesla_data()
+    if 'drive_state' in data:
+        return jsonify({
+            'latitude': data['drive_state']['latitude'],
+            'longitude': data['drive_state']['longitude']
+        })
+    return jsonify({'error': 'Could not retrieve data'})
+
+if __name__ == '__main__':
+    app.run(debug=True)
